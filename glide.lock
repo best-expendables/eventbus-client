@@ -1,0 +1,127 @@
+hash: 8722c8a1d880f3227450e10859a575be0b9ce15595f4dec39c1a9fbecb55a2d2
+updated: 2018-08-06T17:55:53.983337+07:00
+imports:
+- name: bitbucket.org/snapmartinc/logger
+  version: 5fe2cc18c69e1e49f94cbcb48de1c57d8d4987af
+- name: bitbucket.org/snapmartinc/trace
+  version: c6c80b01d054ae128421e42aac6eb3fb9beb79b7
+- name: bitbucket.org/snapmartinc/user-service-client
+  version: e60639b5dbb024897fe7d1f1bb85ec64788d06c1
+- name: github.com/apache/thrift
+  version: e59b73d3c2bf1c328ccb78e683c0462fa1a473c7
+  subpackages:
+  - lib/go/thrift
+- name: github.com/codahale/hdrhistogram
+  version: 3a0bb77429bd3a61596f5e8a3172445844342120
+- name: github.com/davecgh/go-spew
+  version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
+  subpackages:
+  - spew
+- name: github.com/eapache/go-resiliency
+  version: ea41b0fad31007accc7f806884dcdf3da98b79ce
+  subpackages:
+  - breaker
+- name: github.com/eapache/go-xerial-snappy
+  version: bb955e01b9346ac19dc29eb16586c90ded99a98c
+- name: github.com/eapache/queue
+  version: 093482f3f8ce946c05bcba64badd2c82369e084d
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
+- name: github.com/go-playground/locales
+  version: f63010822830b6fe52288ee52d5a1151088ce039
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: b32fa301c9fe55953584134cb6853a13c87ec0a1
+- name: github.com/gogo/protobuf
+  version: 30cf7ac33676b5786e78c746683f0d4cd64fa75b
+  subpackages:
+  - proto
+- name: github.com/golang/snappy
+  version: 553a641470496b2327abcac10b36396bd98e45c9
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/newrelic/go-agent
+  version: 5adc3b70de72198b5e21a6a811891309a0dcfba4
+  subpackages:
+  - internal
+  - internal/cat
+  - internal/jsonx
+  - internal/logger
+  - internal/sysinfo
+  - internal/utilization
+- name: github.com/opentracing-contrib/go-observer
+  version: a52f2342449246d5bcc273e65cbdcfa5f7d6c63c
+- name: github.com/opentracing/opentracing-go
+  version: 6c572c00d1830223701e155de97408483dfcd14a
+  subpackages:
+  - ext
+  - log
+- name: github.com/openzipkin/zipkin-go-opentracing
+  version: 26cf9707480e6b90e5eff22cf0bbf05319154232
+  subpackages:
+  - flag
+  - thrift/gen-go/scribe
+  - thrift/gen-go/zipkincore
+  - types
+  - wire
+- name: github.com/pierrec/lz4
+  version: ed8d4cc3b461464e69798080a0092bd028910298
+- name: github.com/pierrec/xxHash
+  version: a0006b13c722f7f12368c00a3d3c2ae8a999a0c6
+  subpackages:
+  - xxHash32
+- name: github.com/rcrowley/go-metrics
+  version: e2704e165165ec55d062f5919b4b29494e9fa790
+- name: github.com/Shopify/sarama
+  version: 3c763ff04e6daa57d4a4614e5bcd908f2527c989
+- name: github.com/sirupsen/logrus
+  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+- name: github.com/streadway/amqp
+  version: 70e15c650864f4fc47f5d3c82ea117285480895d
+- name: github.com/jinzhu/gorm
+  version: 6ed508ec6a4ecb3531899a69cbc746ccf65a4166
+  subpackages:
+    - dialects/postgres
+- name: github.com/jinzhu/inflection
+  version: 04140366298a54a039076d798123ffa108fff46c
+- name: github.com/uber/jaeger-client-go
+  version: b043381d944715b469fd6b37addfd30145ca1758
+  subpackages:
+  - internal/baggage
+  - internal/spanlog
+  - internal/throttler
+  - log
+  - thrift
+  - thrift-gen/agent
+  - thrift-gen/jaeger
+  - thrift-gen/sampling
+  - thrift-gen/zipkincore
+  - utils
+- name: github.com/uber/jaeger-lib
+  version: ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5
+  subpackages:
+  - metrics
+- name: golang.org/x/crypto
+  version: edd5e9b0879d13ee6970a50153d85b8fec9f7686
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 1b2967e3c290b7c545b3db0deeda16e9be4f98a2
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/go-playground/validator.v9
+  version: ab2a8a99087e827c9af87ed6777ba897348fb178
+- name: github.com/go-redis/redis
+  version: d22fde8721cc915a55aeb6b00944a76a92bfeb6e
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+  - internal/util
+testImports: []
