@@ -1,12 +1,9 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/lgo/logger"
-	"bitbucket.org/snapmartinc/lgo/newrelic-context"
+	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"github.com/newrelic/go-agent"
 	"runtime/debug"
 )
 
@@ -17,18 +14,6 @@ type (
 	ConsumerMiddleware func(next ConsumeFunc) ConsumeFunc
 )
 
-//Start new relic transaction before process 1 message, end transaction after finishing
-func NewRelic(nrApp newrelic.Application) func(next ConsumeFunc) ConsumeFunc {
-	return func(next ConsumeFunc) ConsumeFunc {
-		return func(ctx context.Context, message *Message) error {
-			txn := startTransactionForEvent(nrApp, message)
-			defer txn.End()
-			ctx = nrcontext.ContextWithTxn(ctx, txn)
-
-			return next(ctx, message)
-		}
-	}
-}
 
 //Log every processing message
 func MessageLog(next ConsumeFunc) ConsumeFunc {
@@ -93,37 +78,6 @@ func RecoverWithRetry(publisher Producer) func(next ConsumeFunc) ConsumeFunc {
 	}
 }
 
-//Put NewRelic transaction into gorm context
-func Gorm(dbConn *gorm.DB) func(next ConsumeFunc) ConsumeFunc {
-	return func(next ConsumeFunc) ConsumeFunc {
-		return func(ctx context.Context, message *Message) error {
-			dbConn = nrcontext.SetTxnToGorm(ctx, dbConn)
-			ctx = SetGormToContext(ctx, dbConn)
-
-			return next(ctx, message)
-		}
-	}
-}
-
-//Start 1 database transaction before processing message
-func WithTransaction(dbConn *gorm.DB) func(next ConsumeFunc) ConsumeFunc {
-	return func(next ConsumeFunc) ConsumeFunc {
-		return func(ctx context.Context, message *Message) error {
-			txn := dbConn.Begin()
-			if txn.Error != nil {
-				return txn.Error
-			}
-			SetGormToContext(ctx, nrcontext.SetTxnToGorm(ctx, txn))
-
-			err := next(ctx, message)
-			if err != nil {
-				return txn.Rollback().Error
-			}
-
-			return txn.Commit().Error
-		}
-	}
-}
 
 func makeConsumerMiddlewareChain(middleWares []ConsumerMiddleware, head ConsumeFunc) ConsumeFunc {
 	total := len(middleWares)

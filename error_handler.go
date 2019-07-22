@@ -1,7 +1,7 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/lgo/logger"
+	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"github.com/newrelic/go-agent"
 	"github.com/streadway/amqp"

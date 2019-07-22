@@ -2,11 +2,11 @@ hash: 8722c8a1d880f3227450e10859a575be0b9ce15595f4dec39c1a9fbecb55a2d2
 updated: 2018-08-06T17:55:53.983337+07:00
 imports:
 - name: bitbucket.org/snapmartinc/logger
-  version: 5fe2cc18c69e1e49f94cbcb48de1c57d8d4987af
+  version: 70e1fed015872c50d2b1cc6db7717e81d2a6c95c
 - name: bitbucket.org/snapmartinc/trace
-  version: c6c80b01d054ae128421e42aac6eb3fb9beb79b7
+  version: 0291aa47f02f6d5f4045becdb4b34cb6bf9ed821
 - name: bitbucket.org/snapmartinc/user-service-client
-  version: e60639b5dbb024897fe7d1f1bb85ec64788d06c1
+  version: 5a6f104cf9696bce169dd34c3862d4e87312ad24
 - name: github.com/apache/thrift
   version: e59b73d3c2bf1c328ccb78e683c0462fa1a473c7
   subpackages:
@@ -124,4 +124,12 @@ imports:
   - internal/pool
   - internal/proto
   - internal/util
+- name: gopkg.in/redis.v5
+  version: a16aeec10ff407b1e7be6dd35797ccf5426ef0f0
+  subpackages:
+    - internal
+    - internal/consistenthash
+    - internal/hashtag
+    - internal/pool
+    - internal/proto
 testImports: []

@@ -1,7 +1,7 @@
 package eventbusclient_test
 
 import (
-	"bitbucket.org/snapmartinc/eventbus-client"
+	eventbusclient "eventbus-client"
 	"testing"
 )
 

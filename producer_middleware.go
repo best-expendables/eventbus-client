@@ -1,10 +1,8 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/lgo/logger"
-	"bitbucket.org/snapmartinc/lgo/newrelic-context"
+	"bitbucket.org/snapmartinc/logger"
 	"context"
-	"github.com/newrelic/go-agent"
 )
 
 type (
@@ -13,23 +11,6 @@ type (
 	//PublishFuncMiddleware middleware
 	PublishFuncMiddleware func(next PublishFunc) PublishFunc
 )
-
-func NewRelicPublishMiddleware(next PublishFunc) PublishFunc {
-	return func(ctx context.Context, message *Message) error {
-		if txn := nrcontext.GetTnxFromContext(ctx); txn != nil {
-			segment := newrelic.DatastoreSegment{
-				StartTime:    newrelic.StartSegmentNow(txn),
-				Product:      "RabbitMQ",
-				Collection:   message.RoutingKey,
-				Operation:    "Publish",
-				DatabaseName: message.Exchange,
-			}
-			defer segment.End()
-		}
-
-		return next(ctx, message)
-	}
-}
 
 func PublishMessageLogMiddleware(next PublishFunc) PublishFunc {
 	return func(ctx context.Context, message *Message) error {

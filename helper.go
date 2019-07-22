@@ -1,9 +1,9 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/lgo/logger"
-	"bitbucket.org/snapmartinc/lgo/trace"
-	"bitbucket.org/snapmartinc/lgo/user-service-client"
+	"bitbucket.org/snapmartinc/logger"
+	"bitbucket.org/snapmartinc/trace"
+	"bitbucket.org/snapmartinc/user-service-client"
 	"context"
 	"encoding/json"
 	"errors"

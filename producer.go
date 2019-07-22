@@ -1,7 +1,7 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/lgo/logger"
+	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
@@ -56,7 +56,6 @@ func NewProducerWithConfig(config *Config) (Producer, error) {
 		validate: validator.New(),
 		locker:   new(sync.Mutex),
 	}
-	producer.Use(NewRelicPublishMiddleware)
 	producer.Use(PublishMessageLogMiddleware)
 
 	if err := producer.createConnection(); err != nil {
