@@ -1,9 +1,11 @@
 package eventbusclient
 
 import (
+	"bitbucket.org/snapmartinc/trace"
 	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"fmt"
+	newrelic "github.com/newrelic/go-agent"
 	"runtime/debug"
 )
 
@@ -13,6 +15,36 @@ type (
 	//HandlerFuncMiddleware middleware
 	ConsumerMiddleware func(next ConsumeFunc) ConsumeFunc
 )
+
+
+func StoreTraceIdIntoContext(next ConsumeFunc) ConsumeFunc {
+	return func(ctx context.Context, msg *Message) error {
+		ctx = trace.ContextWithRequestID(ctx, msg.Header.TraceId)
+		return next(ctx, msg)
+	}
+}
+
+func StoreUserIdIntoContext(next ConsumeFunc) ConsumeFunc {
+	return func(ctx context.Context, msg *Message) error {
+		ctx = trace.ContextWithUserID(ctx, msg.Header.UserId)
+		return next(ctx, msg)
+	}
+}
+
+func NewrelicAcceptTraceId(next ConsumeFunc) ConsumeFunc {
+	return func(ctx context.Context, msg *Message) error {
+		if txn := newrelic.FromContext(ctx); txn != nil {
+			if traceId := msg.Header.TraceId; traceId != "" {
+				err := txn.AcceptDistributedTracePayload(newrelic.TransportAMQP, traceId)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return next(ctx, msg)
+	}
+}
+
 
 
 //Log every processing message
