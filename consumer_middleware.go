@@ -100,7 +100,7 @@ func RecoverWithRetry(publisher Producer) func(next ConsumeFunc) ConsumeFunc {
 
 					//Publish to retry queue
 					message.Header.XRetryCount++
-					message.RoutingKey = fmt.Sprintf("%s_delayed", message.RoutingKey)
+					message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
 					publisher.Publish(ctx, message)
 				}
 			}()
