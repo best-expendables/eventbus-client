@@ -24,7 +24,7 @@ type (
 		EventName   string    `json:"eventName" validate:"required"`
 		TraceId     string    `json:"traceId"`
 		UserId      string    `json:"userId"`
-		XRetryCount int16     `json:"xRetryCount,omitempty"`
+		XRetryCount int       `json:"xRetryCount,omitempty"`
 	}
 
 	// Payload message's data
@@ -55,9 +55,9 @@ func (h *Header) FromMap(headers map[string]interface{}) error {
 
 	retryInt, ok := headers["xRetryCount"].(int)
 	if ok {
-		h.XRetryCount = int16(retryInt)
+		h.XRetryCount = retryInt
 	} else {
-		h.XRetryCount = int16(0)
+		h.XRetryCount = 0
 	}
 
 	return nil

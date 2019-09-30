@@ -1,8 +1,9 @@
 package eventbusclient
 
 import (
-	"github.com/streadway/amqp"
 	"testing"
+
+	"github.com/streadway/amqp"
 )
 
 func TestGetMessageFromDelivery(t *testing.T) {
@@ -12,7 +13,7 @@ func TestGetMessageFromDelivery(t *testing.T) {
 		"timestamp":   1551356656,
 		"traceId":     `{"v":[0,1],"d":{"ty":"App","ap":"58007583","ac":"1390351","tk":"851197","tx":"f6f817f7ca3126f8","tr":"320976e01868e13f","pr":0.82684237,"sa":false,"ti":1551356656078}}`,
 		"userId":      "",
-		"xRetryCount": int16(3),
+		"xRetryCount": 3,
 	}
 
 	delivery := amqp.Delivery{

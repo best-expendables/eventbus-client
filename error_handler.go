@@ -57,13 +57,13 @@ func LogErrorToNewRelic(nrApp newrelic.Application) func(ctx context.Context, de
 	}
 }
 
-func RetryWithError(publisher Producer) func(ctx context.Context, delivery amqp.Delivery, err error) {
+func RetryWithError(publisher Producer, retryCount int) func(ctx context.Context, delivery amqp.Delivery, err error) {
 	return func(ctx context.Context, delivery amqp.Delivery, err error) {
-		message, getMsgErr := getMessageFromDelivery(delivery)
-		if getMsgErr != nil || message == nil {
+		if _, ok := err.(RetryErrorType); !ok {
 			return
 		}
-		if _, ok := err.(RetryError); !ok {
+		message, getMsgErr := getMessageFromDelivery(delivery)
+		if getMsgErr != nil || message == nil {
 			return
 		}
 		logEntry := logger.EntryFromContext(ctx)
@@ -73,10 +73,16 @@ func RetryWithError(publisher Producer) func(ctx context.Context, delivery amqp.
 
 		fields := getLogFieldFromMessage(message)
 		fields["trace"] = string(debug.Stack())
-		logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", err))
 
-		//Publish to retry queue
 		message.Header.XRetryCount++
+
+		if message.Header.XRetryCount > retryCount {
+			logEntry.WithFields(fields).Error(fmt.Sprintf("re: %v", err))
+			_ = delivery.Reject(false)
+			return
+		}
+
+		logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", err))
 		message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
 		if err := publisher.Publish(ctx, message); err != nil {
 			panic(err)
@@ -92,10 +98,6 @@ func getLogFieldsForDelivery(err error, delivery amqp.Delivery) logger.Fields {
 		"routingKey": delivery.RoutingKey,
 		"body":       string(delivery.Body),
 	}
-}
-
-func RejectMessage(_ context.Context, delivery amqp.Delivery, _ error) {
-	//delivery.Ack(false)
 }
 
 func ReQueueMessage(_ context.Context, delivery amqp.Delivery, _ error) {

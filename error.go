@@ -1,7 +1,22 @@
 package eventbusclient
 
-type RetryError error
+type RetryErrorType interface {
+	IsRetryErrorType() bool
+	Error() string
+}
 
-func NewRetryError(err error) RetryError {
-	return RetryError(err)
+type retryError struct {
+	err error
+}
+
+func (r retryError) IsRetryErrorType() bool {
+	return true
+}
+
+func (r retryError) Error() string {
+	return r.err.Error()
+}
+
+func NewRetryError(err error) RetryErrorType {
+	return retryError{err: err}
 }

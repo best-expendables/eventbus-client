@@ -1,18 +1,19 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/logger"
-	"bitbucket.org/snapmartinc/trace"
-	"bitbucket.org/snapmartinc/user-service-client"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"github.com/newrelic/go-agent"
-	"github.com/streadway/amqp"
 	"strings"
 	"time"
+
+	"bitbucket.org/snapmartinc/logger"
+	"bitbucket.org/snapmartinc/trace"
+	userclient "bitbucket.org/snapmartinc/user-service-client"
+	"github.com/jinzhu/gorm"
+	newrelic "github.com/newrelic/go-agent"
+	"github.com/streadway/amqp"
 )
 
 var loggerFactory logger.Factory
@@ -105,7 +106,7 @@ func getMessageFromDelivery(d amqp.Delivery) (*Message, error) {
 		t, _ = d.Headers["timestamp"].(int64)
 	}
 	timestamp := time.Unix(t, 0)
-	retry, _ := d.Headers["xRetryCount"].(int16)
+	retry, _ := d.Headers["xRetryCount"].(int)
 	msg := Message{
 		Id:         d.MessageId,
 		Exchange:   d.Exchange,

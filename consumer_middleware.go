@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/snapmartinc/logger"
 	"bitbucket.org/snapmartinc/trace"
 	newrelic "github.com/newrelic/go-agent"
+	"github.com/pkg/errors"
 )
 
 type (
@@ -81,25 +82,12 @@ func Recover(next ConsumeFunc) ConsumeFunc {
 	}
 }
 
-func RecoverWithRetry(publisher Producer) func(next ConsumeFunc) ConsumeFunc {
+func RecoverWithRetry() func(next ConsumeFunc) ConsumeFunc {
 	return func(next ConsumeFunc) ConsumeFunc {
-		return func(ctx context.Context, message *Message) error {
+		return func(ctx context.Context, message *Message) (err error) {
 			defer func() {
 				if r := recover(); r != nil {
-					//Log first
-					logEntry := logger.EntryFromContext(ctx)
-					if logEntry == nil {
-						logEntry = loggerFactory.Logger(ctx)
-					}
-
-					fields := getLogFieldFromMessage(message)
-					fields["trace"] = string(debug.Stack())
-					logEntry.WithFields(fields).Error(fmt.Sprintf("MessagePanic: %v", r))
-
-					//Publish to retry queue
-					message.Header.XRetryCount++
-					message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
-					publisher.Publish(ctx, message)
+					err = NewRetryError(errors.Wrap(err, "retry with panic error"))
 				}
 			}()
 			return next(ctx, message)
