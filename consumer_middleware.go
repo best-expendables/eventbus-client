@@ -1,12 +1,13 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/trace"
-	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"fmt"
-	newrelic "github.com/newrelic/go-agent"
 	"runtime/debug"
+
+	"bitbucket.org/snapmartinc/logger"
+	"bitbucket.org/snapmartinc/trace"
+	newrelic "github.com/newrelic/go-agent"
 )
 
 type (
@@ -15,7 +16,6 @@ type (
 	//HandlerFuncMiddleware middleware
 	ConsumerMiddleware func(next ConsumeFunc) ConsumeFunc
 )
-
 
 func StoreTraceIdIntoContext(next ConsumeFunc) ConsumeFunc {
 	return func(ctx context.Context, msg *Message) error {
@@ -44,8 +44,6 @@ func NewrelicAcceptTraceId(next ConsumeFunc) ConsumeFunc {
 		return next(ctx, msg)
 	}
 }
-
-
 
 //Log every processing message
 func MessageLog(next ConsumeFunc) ConsumeFunc {
@@ -104,12 +102,10 @@ func RecoverWithRetry(publisher Producer) func(next ConsumeFunc) ConsumeFunc {
 					publisher.Publish(ctx, message)
 				}
 			}()
-
 			return next(ctx, message)
 		}
 	}
 }
-
 
 func makeConsumerMiddlewareChain(middleWares []ConsumerMiddleware, head ConsumeFunc) ConsumeFunc {
 	total := len(middleWares)

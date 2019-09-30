@@ -1,9 +1,12 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/logger"
 	"context"
-	"github.com/newrelic/go-agent"
+	"fmt"
+	"runtime/debug"
+
+	"bitbucket.org/snapmartinc/logger"
+	newrelic "github.com/newrelic/go-agent"
 	"github.com/streadway/amqp"
 )
 
@@ -22,15 +25,18 @@ func LogErrorToNewRelic(nrApp newrelic.Application) func(ctx context.Context, de
 	return func(ctx context.Context, delivery amqp.Delivery, err error) {
 		var nrTxn newrelic.Transaction
 		message, getMsgErr := getMessageFromDelivery(delivery)
+		defer func() {
+			_ = nrTxn.End()
+		}()
 		if getMsgErr != nil || message == nil {
 			nrTxn = startTransactionForDelivery(nrApp, delivery)
-			nrTxn.NoticeError(newrelic.Error{
+			_ = nrTxn.NoticeError(newrelic.Error{
 				Message: err.Error(),
 				Class:   "ConsumerError",
 			})
 		} else {
 			nrTxn = startTransactionForEvent(nrApp, message)
-			nrTxn.NoticeError(newrelic.Error{
+			_ = nrTxn.NoticeError(newrelic.Error{
 				Message: err.Error(),
 				Class:   "ConsumerError",
 				Attributes: map[string]interface{}{
@@ -48,8 +54,33 @@ func LogErrorToNewRelic(nrApp newrelic.Application) func(ctx context.Context, de
 				},
 			})
 		}
+	}
+}
 
-		defer nrTxn.End()
+func RetryWithError(publisher Producer) func(ctx context.Context, delivery amqp.Delivery, err error) {
+	return func(ctx context.Context, delivery amqp.Delivery, err error) {
+		message, getMsgErr := getMessageFromDelivery(delivery)
+		if getMsgErr != nil || message == nil {
+			return
+		}
+		if _, ok := err.(RetryError); !ok {
+			return
+		}
+		logEntry := logger.EntryFromContext(ctx)
+		if logEntry == nil {
+			logEntry = loggerFactory.Logger(ctx)
+		}
+
+		fields := getLogFieldFromMessage(message)
+		fields["trace"] = string(debug.Stack())
+		logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", err))
+
+		//Publish to retry queue
+		message.Header.XRetryCount++
+		message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
+		if err := publisher.Publish(ctx, message); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -68,5 +99,5 @@ func RejectMessage(_ context.Context, delivery amqp.Delivery, _ error) {
 }
 
 func ReQueueMessage(_ context.Context, delivery amqp.Delivery, _ error) {
-	delivery.Nack(false, true)
+	_ = delivery.Nack(false, true)
 }
