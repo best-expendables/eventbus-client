@@ -82,16 +82,14 @@ func Recover(next ConsumeFunc) ConsumeFunc {
 	}
 }
 
-func RecoverWithRetry() func(next ConsumeFunc) ConsumeFunc {
-	return func(next ConsumeFunc) ConsumeFunc {
-		return func(ctx context.Context, message *Message) (err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					err = NewRetryError(errors.Wrap(err, "retry with panic error"))
-				}
-			}()
-			return next(ctx, message)
-		}
+func RecoverWithRetry(next ConsumeFunc) ConsumeFunc {
+	return func(ctx context.Context, message *Message) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = NewRetryError(errors.Wrap(err, "retry with panic error"))
+			}
+		}()
+		return next(ctx, message)
 	}
 }
 
