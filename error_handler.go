@@ -74,7 +74,7 @@ func RetryWithError(publisher Producer, retryCount int) func(ctx context.Context
 		fields := getLogFieldFromMessage(message)
 		fields["trace"] = string(debug.Stack())
 
-		message.Header.XRetryCount++
+		message.Header.XRetryCount = message.Header.XRetryCount + 1
 
 		if message.Header.XRetryCount > retryCount {
 			logEntry.WithFields(fields).Error(fmt.Sprintf("re: %v", err))
