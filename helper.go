@@ -106,7 +106,7 @@ func getMessageFromDelivery(d amqp.Delivery) (*Message, error) {
 		t, _ = d.Headers["timestamp"].(int64)
 	}
 	timestamp := time.Unix(t, 0)
-	retry, _ := d.Headers["xRetryCount"].(int)
+	retry, _ := d.Headers["xRetryCount"].(int16)
 	msg := Message{
 		Id:         d.MessageId,
 		Exchange:   d.Exchange,
