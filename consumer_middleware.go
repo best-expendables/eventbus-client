@@ -32,6 +32,19 @@ func StoreUserIdIntoContext(next ConsumeFunc) ConsumeFunc {
 	}
 }
 
+func WithNewRelicForConsumer(nrApp newrelic.Application) func(next ConsumeFunc) ConsumeFunc {
+	return func(next ConsumeFunc) ConsumeFunc {
+		return func(ctx context.Context, msg *Message) error {
+			txn := startTransactionForEvent(nrApp, msg)
+			defer func() {
+				_ = txn.End()
+			}()
+			ctx = newrelic.NewContext(ctx, txn)
+			return next(ctx, msg)
+		}
+	}
+}
+
 func NewrelicAcceptTraceId(next ConsumeFunc) ConsumeFunc {
 	return func(ctx context.Context, msg *Message) error {
 		if txn := newrelic.FromContext(ctx); txn != nil {
