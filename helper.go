@@ -42,7 +42,6 @@ func GetGormFromContext(ctx context.Context) *gorm.DB {
 	if db := ctx.Value(gormContextKey); db != nil {
 		return db.(*gorm.DB)
 	}
-
 	panic(ErrDbEmpty)
 }
 
