@@ -188,11 +188,12 @@ func (cm *consumerManager) process(queueName string, deliveries <-chan amqp.Deli
 	defer cm.recover(queueName, deliveries, consumer)
 
 	for d := range deliveries {
+		var msg *Message
 		var err error
 		if !json.Valid(d.Body) {
 			cm.handleError(context.Background(), consumer, d, ErrInvalidJson)
 		} else {
-			msg, err := getMessageFromDelivery(d)
+			msg, err = getMessageFromDelivery(d)
 			if err != nil {
 				cm.handleError(context.Background(), consumer, d, err)
 			} else {
