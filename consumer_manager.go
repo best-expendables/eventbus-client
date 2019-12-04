@@ -1,15 +1,16 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/streadway/amqp"
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"bitbucket.org/snapmartinc/logger"
+	"github.com/streadway/amqp"
 )
 
 // ConsumerManager manage the consumers
@@ -187,6 +188,7 @@ func (cm *consumerManager) process(queueName string, deliveries <-chan amqp.Deli
 	defer cm.recover(queueName, deliveries, consumer)
 
 	for d := range deliveries {
+		var err error
 		if !json.Valid(d.Body) {
 			cm.handleError(context.Background(), consumer, d, ErrInvalidJson)
 		} else {
@@ -201,9 +203,10 @@ func (cm *consumerManager) process(queueName string, deliveries <-chan amqp.Deli
 				}
 			}
 		}
-
-		err := d.Ack(false)
-		if err != nil {
+		if err == messageRejectedError {
+			continue
+		}
+		if err = d.Ack(false); err != nil {
 			if shouldRetryConnectOnError(err) {
 				_ = cm.retryConsume()
 			}

@@ -78,7 +78,10 @@ func RetryWithError(publisher Producer, retryCount int) func(ctx context.Context
 
 		if message.Header.XRetryCount > int16(retryCount) {
 			logEntry.WithFields(fields).Error(fmt.Sprintf("re: %v", err))
-			_ = delivery.Reject(false)
+			if err := delivery.Reject(false); err != nil {
+				panic(err)
+			}
+			err = messageRejectedError
 			return
 		}
 

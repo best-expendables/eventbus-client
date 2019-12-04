@@ -1,5 +1,7 @@
 package eventbusclient
 
+import "errors"
+
 type RetryErrorType interface {
 	IsRetryErrorType() bool
 	Error() string
@@ -20,3 +22,5 @@ func (r retryError) Error() string {
 func NewRetryError(err error) RetryErrorType {
 	return retryError{err: err}
 }
+
+var messageRejectedError = errors.New("message rejected")
