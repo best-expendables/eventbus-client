@@ -222,45 +222,6 @@ func (cm *consumerManager) process(queueName string, deliveries <-chan amqp.Deli
 	}
 }
 
-func (cm *consumerManager) processMessage(msg *Message) error {
-	defer func() {
-		cm.recover(queueName, deliveries, consumer)
-	}()
-
-	for d := range deliveries {
-		var msg *Message
-		var err error
-		if !json.Valid(d.Body) {
-			cm.handleError(context.Background(), consumer, msg, ErrInvalidJson)
-		} else {
-			msg, err = getMessageFromDelivery(d)
-			if err != nil {
-				cm.handleError(context.Background(), consumer, msg, err)
-			} else {
-				ctx := contextFromMessage(msg)
-				err = makeConsumerMiddlewareChain(consumer.Middlewares(), consumer.Consume)(ctx, msg)
-				if err != nil {
-					cm.handleError(ctx, consumer, msg, err)
-				}
-			}
-		}
-
-		if msg.Status == MessageStatusReject {
-			err = d.Reject(false)
-		} else {
-			err = d.Ack(false)
-		}
-		if err != nil {
-			if shouldRetryConnectOnError(err) {
-				_ = cm.retryConsume()
-			}
-
-			fields := getLogFieldsFromMessage(err, msg)
-			logger.WithFields(fields).Error("MessageAckFailed")
-		}
-	}
-}
-
 func (cm *consumerManager) handleError(ctx context.Context, consumer Consumer, msg *Message, err error) {
 	if shouldRetryConnectOnError(err) {
 		_ = cm.retryConsume()
