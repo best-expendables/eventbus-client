@@ -1,15 +1,16 @@
 package eventbusclient
 
 import (
-	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/streadway/amqp"
-	"gopkg.in/go-playground/validator.v9"
 	"sync"
 	"time"
+
+	"bitbucket.org/snapmartinc/logger"
+	"github.com/streadway/amqp"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var (
@@ -164,7 +165,6 @@ func (p *producer) publish(_ context.Context, msg *Message) error {
 }
 
 func (p *producer) PublishRaw(ctx context.Context, msg *Message) error {
-
 	return makePublisherMiddlewareChain(p.middlewares, p.publishRaw)(ctx, msg)
 }
 

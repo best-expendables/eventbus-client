@@ -2,6 +2,7 @@ package eventbusclient
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
 
@@ -10,60 +11,47 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func LogFailedMessage(ctx context.Context, delivery amqp.Delivery, err error) {
+func LogFailedMessage(ctx context.Context, message *Message, err error) {
 	logEntry := logger.EntryFromContext(ctx)
 	if logEntry == nil {
 		logEntry = loggerFactory.Logger(ctx)
 	}
 
-	fields := getLogFieldsForDelivery(err, delivery)
+	fields := getLogFieldsFromMessage(err, message)
 	logEntry.WithFields(fields).Error("MessageFailed")
 }
 
 //Log failed message to NewRelic
-func LogErrorToNewRelic(nrApp newrelic.Application) func(ctx context.Context, delivery amqp.Delivery, err error) {
-	return func(ctx context.Context, delivery amqp.Delivery, err error) {
+func LogErrorToNewRelic(nrApp newrelic.Application) ErrorHandler {
+	return func(ctx context.Context, message *Message, err error) {
 		var nrTxn newrelic.Transaction
-		message, getMsgErr := getMessageFromDelivery(delivery)
 		defer func() {
 			_ = nrTxn.End()
 		}()
-		if getMsgErr != nil || message == nil {
-			nrTxn = startTransactionForDelivery(nrApp, delivery)
-			_ = nrTxn.NoticeError(newrelic.Error{
-				Message: err.Error(),
-				Class:   "ConsumerError",
-			})
-		} else {
-			nrTxn = startTransactionForEvent(nrApp, message)
-			_ = nrTxn.NoticeError(newrelic.Error{
-				Message: err.Error(),
-				Class:   "ConsumerError",
-				Attributes: map[string]interface{}{
-					"message_id": message.Id,
-					"exchange":   message.Exchange,
-					"routingKey": message.RoutingKey,
-					"eventName":  message.Header.EventName,
-					"publisher":  message.Header.Publisher,
-					"timeStamp":  message.Header.Timestamp,
-					"tracerId":   message.Header.TraceId,
-					"userId":     message.Header.UserId,
-					"retryCount": message.Header.XRetryCount,
-					"entityId":   message.Payload.EntityId,
-					"payload":    message.Payload.Data,
-				},
-			})
-		}
+		nrTxn = startTransactionForEvent(nrApp, message)
+		_ = nrTxn.NoticeError(newrelic.Error{
+			Message: err.Error(),
+			Class:   "ConsumerError",
+			Attributes: map[string]interface{}{
+				"message_id": message.Id,
+				"exchange":   message.Exchange,
+				"routingKey": message.RoutingKey,
+				"eventName":  message.Header.EventName,
+				"publisher":  message.Header.Publisher,
+				"timeStamp":  message.Header.Timestamp,
+				"tracerId":   message.Header.TraceId,
+				"userId":     message.Header.UserId,
+				"retryCount": message.Header.XRetryCount,
+				"entityId":   message.Payload.EntityId,
+				"payload":    message.Payload.Data,
+			},
+		})
 	}
 }
 
-func RetryWithError(publisher Producer, retryCount int) func(ctx context.Context, delivery amqp.Delivery, err error) {
-	return func(ctx context.Context, delivery amqp.Delivery, err error) {
+func RetryWithError(publisher Producer, retryCount int) ErrorHandler {
+	return func(ctx context.Context, msg *Message, err error) {
 		if _, ok := err.(RetryErrorType); !ok {
-			return
-		}
-		message, getMsgErr := getMessageFromDelivery(delivery)
-		if getMsgErr != nil || message == nil {
 			return
 		}
 		logEntry := logger.EntryFromContext(ctx)
@@ -71,35 +59,33 @@ func RetryWithError(publisher Producer, retryCount int) func(ctx context.Context
 			logEntry = loggerFactory.Logger(ctx)
 		}
 
-		fields := getLogFieldFromMessage(message)
+		fields := getLogFieldFromMessage(msg)
 		fields["trace"] = string(debug.Stack())
 
-		message.Header.XRetryCount = message.Header.XRetryCount + 1
+		msg.Header.XRetryCount = msg.Header.XRetryCount + 1
 
-		if message.Header.XRetryCount > int16(retryCount) {
+		if msg.Header.XRetryCount > int16(retryCount) {
 			logEntry.WithFields(fields).Error(fmt.Sprintf("re: %v", err))
-			if err := delivery.Reject(false); err != nil {
-				panic(err)
-			}
-			err = messageRejectedError
+			msg.Status = MessageStatusReject
 			return
 		}
 
 		logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", err))
-		message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
-		if err := publisher.Publish(ctx, message); err != nil {
+		msg.RoutingKey = fmt.Sprintf("%s.delayed", msg.RoutingKey)
+		if err := publisher.Publish(ctx, msg); err != nil {
 			panic(err)
 		}
 	}
 }
 
-func getLogFieldsForDelivery(err error, delivery amqp.Delivery) logger.Fields {
+func getLogFieldsFromMessage(err error, msg *Message) logger.Fields {
+	body, _ := json.Marshal(msg.Payload.Data)
 	return logger.Fields{
 		"error":      err.Error(),
-		"id":         delivery.MessageId,
-		"exchange":   delivery.Exchange,
-		"routingKey": delivery.RoutingKey,
-		"body":       string(delivery.Body),
+		"id":         msg.Id,
+		"exchange":   msg.Exchange,
+		"routingKey": msg.RoutingKey,
+		"body":       string(body),
 	}
 }
 

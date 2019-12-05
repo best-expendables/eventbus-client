@@ -28,8 +28,7 @@ type ConsumerManager interface {
 	Wait()
 }
 
-// ErrorHandler handle in case there is error, can be: requeue, ignore message, log ...
-type ErrorHandler func(ctx context.Context, delivery amqp.Delivery, err error)
+type ErrorHandler func(ctx context.Context, msg *Message, err error)
 
 var ErrInvalidJson = errors.New("payload is not a valid json data")
 
@@ -185,46 +184,90 @@ func (cm *consumerManager) ShutDown() error {
 }
 
 func (cm *consumerManager) process(queueName string, deliveries <-chan amqp.Delivery, consumer Consumer) {
-	defer cm.recover(queueName, deliveries, consumer)
+	defer func() {
+		cm.recover(queueName, deliveries, consumer)
+	}()
 
 	for d := range deliveries {
 		var msg *Message
 		var err error
 		if !json.Valid(d.Body) {
-			cm.handleError(context.Background(), consumer, d, ErrInvalidJson)
+			cm.handleError(context.Background(), consumer, msg, ErrInvalidJson)
 		} else {
 			msg, err = getMessageFromDelivery(d)
 			if err != nil {
-				cm.handleError(context.Background(), consumer, d, err)
+				cm.handleError(context.Background(), consumer, msg, err)
 			} else {
 				ctx := contextFromMessage(msg)
 				err = makeConsumerMiddlewareChain(consumer.Middlewares(), consumer.Consume)(ctx, msg)
 				if err != nil {
-					cm.handleError(ctx, consumer, d, err)
+					cm.handleError(ctx, consumer, msg, err)
 				}
 			}
 		}
-		if err == messageRejectedError {
-			continue
+
+		if msg.Status == MessageStatusReject {
+			err = d.Reject(false)
+		} else {
+			err = d.Ack(false)
 		}
-		if err = d.Ack(false); err != nil {
+		if err != nil {
 			if shouldRetryConnectOnError(err) {
 				_ = cm.retryConsume()
 			}
 
-			fields := getLogFieldsForDelivery(err, d)
+			fields := getLogFieldsFromMessage(err, msg)
 			logger.WithFields(fields).Error("MessageAckFailed")
 		}
 	}
 }
 
-func (cm *consumerManager) handleError(ctx context.Context, consumer Consumer, d amqp.Delivery, err error) {
+func (cm *consumerManager) processMessage(msg *Message) error {
+	defer func() {
+		cm.recover(queueName, deliveries, consumer)
+	}()
+
+	for d := range deliveries {
+		var msg *Message
+		var err error
+		if !json.Valid(d.Body) {
+			cm.handleError(context.Background(), consumer, msg, ErrInvalidJson)
+		} else {
+			msg, err = getMessageFromDelivery(d)
+			if err != nil {
+				cm.handleError(context.Background(), consumer, msg, err)
+			} else {
+				ctx := contextFromMessage(msg)
+				err = makeConsumerMiddlewareChain(consumer.Middlewares(), consumer.Consume)(ctx, msg)
+				if err != nil {
+					cm.handleError(ctx, consumer, msg, err)
+				}
+			}
+		}
+
+		if msg.Status == MessageStatusReject {
+			err = d.Reject(false)
+		} else {
+			err = d.Ack(false)
+		}
+		if err != nil {
+			if shouldRetryConnectOnError(err) {
+				_ = cm.retryConsume()
+			}
+
+			fields := getLogFieldsFromMessage(err, msg)
+			logger.WithFields(fields).Error("MessageAckFailed")
+		}
+	}
+}
+
+func (cm *consumerManager) handleError(ctx context.Context, consumer Consumer, msg *Message, err error) {
 	if shouldRetryConnectOnError(err) {
 		_ = cm.retryConsume()
 	}
 
 	for _, errHandler := range consumer.ErrorHandlers() {
-		errHandler(ctx, d, err)
+		errHandler(ctx, msg, err)
 	}
 }
 
