@@ -1,4 +1,4 @@
-package eventbusclient
+package producer_manager
 
 import (
 	"context"
@@ -8,14 +8,15 @@ import (
 	"sync"
 	"time"
 
+	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/logger"
 	"github.com/streadway/amqp"
 	"gopkg.in/go-playground/validator.v9"
 )
 
 var (
-	//ErrMessageSendConfirmFailed confirm message send failed, producer's connection is automatically refreshed
-	ErrMessageSendConfirmFailed = errors.New("cannot get confirm, refreshed producer")
+	//ErrMessageSendConfirmFailed confirm message send failed, producer_manager's connection is automatically refreshed
+	ErrMessageSendConfirmFailed = errors.New("cannot get confirm, refreshed producer_manager")
 	//ErrMessageNotAcked message is not acked by rabbitmq
 	ErrMessageNotAcked = errors.New("RMQ did not ack the message")
 )
@@ -27,8 +28,8 @@ const (
 // Producer set middlewares and Publish message to eventbus
 type Producer interface {
 	Use(middleware ...PublishFuncMiddleware)
-	Publish(ctx context.Context, message *Message) error
-	PublishRaw(ctx context.Context, message *Message) error
+	Publish(ctx context.Context, message *eventbusclient.Message) error
+	PublishRaw(ctx context.Context, message *eventbusclient.Message) error
 	Close() error
 }
 
@@ -44,14 +45,14 @@ type producer struct {
 	isConnected bool
 }
 
-// NewProducer create new producer, autoload config data from system environment
+// NewProducer create new producer_manager, autoload config data from system environment
 func NewProducer() (Producer, error) {
-	conf := GetAppConfigFromEnv()
+	conf := eventbusclient.GetAppConfigFromEnv()
 
 	return NewProducerWithConfig(&conf)
 }
 
-func NewProducerWithConfig(config *Config) (Producer, error) {
+func NewProducerWithConfig(config *eventbusclient.Config) (Producer, error) {
 	producer := &producer{
 		url:      config.GetURL(),
 		validate: validator.New(),
@@ -122,13 +123,13 @@ func (p *producer) createConnection() error {
 	return nil
 }
 
-func (p *producer) Publish(ctx context.Context, msg *Message) error {
+func (p *producer) Publish(ctx context.Context, msg *eventbusclient.Message) error {
 	if err := p.validate.Struct(*msg); err != nil {
 		return err
 	}
 
 	err := makePublisherMiddlewareChain(p.middlewares, p.publish)(ctx, msg)
-	if shouldRetryConnectOnError(err) {
+	if IsConnectionClosedError(err) {
 		_ = p.createConnection()
 		err = p.publish(ctx, msg)
 	}
@@ -136,7 +137,7 @@ func (p *producer) Publish(ctx context.Context, msg *Message) error {
 	return err
 }
 
-func (p *producer) publish(_ context.Context, msg *Message) error {
+func (p *producer) publish(_ context.Context, msg *eventbusclient.Message) error {
 	body, err := json.Marshal(msg.Payload)
 	if err != nil {
 		return err
@@ -150,14 +151,25 @@ func (p *producer) publish(_ context.Context, msg *Message) error {
 		Body:         body,
 	}
 
-	return p.publishWithRetry(msg.Exchange, msg.RoutingKey, publishing)
+	err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+	for err != nil {
+		if err == amqp.ErrClosed {
+			_ = p.createConnection()
+		} else if err == ErrMessageSendConfirmFailed {
+			_ = p.createConnection()
+		} else if err == ErrMessageNotAcked {
+		}
+		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+	}
+
+	return nil
 }
 
-func (p *producer) PublishRaw(ctx context.Context, msg *Message) error {
+func (p *producer) PublishRaw(ctx context.Context, msg *eventbusclient.Message) error {
 	return makePublisherMiddlewareChain(p.middlewares, p.publishRaw)(ctx, msg)
 }
 
-func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
+func (p *producer) publishRaw(ctx context.Context, msg *eventbusclient.Message) error {
 	body, err := json.Marshal(msg.Payload.Data)
 	if err != nil {
 		return err
@@ -170,23 +182,15 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 		Body:         body,
 	}
 
-	return p.publishWithRetry(msg.Exchange, msg.RoutingKey, publishing)
-}
-
-func (p *producer) publishWithRetry(exchange, routingKey string, msg amqp.Publishing) error {
-	err := p.publishWithConfirm(exchange, routingKey, msg)
+	err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
 	for err != nil {
-		time.Sleep(retryDelaySeconds * time.Second)
 		if err == amqp.ErrClosed {
 			_ = p.createConnection()
 		} else if err == ErrMessageSendConfirmFailed {
 			_ = p.createConnection()
 		} else if err == ErrMessageNotAcked {
 		}
-		err = p.publishWithConfirm(exchange, routingKey, msg)
-		if err != nil {
-			logger.Errorf("Publish message fail: %v", err)
-		}
+		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
 	}
 
 	return nil
@@ -221,6 +225,6 @@ func (p *producer) Close() error {
 	return nil
 }
 
-func shouldRetryConnectOnError(err error) bool {
+func IsConnectionClosedError(err error) bool {
 	return err == amqp.ErrClosed
 }

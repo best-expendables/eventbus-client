@@ -1,11 +1,13 @@
 package main
 
 import (
-	"bitbucket.org/snapmartinc/ims/eventbus-client"
 	"context"
-	"github.com/streadway/amqp"
 	"log"
 	"time"
+
+	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
+	"bitbucket.org/snapmartinc/eventbus-client/producer_manager"
+	"github.com/streadway/amqp"
 )
 
 func failOnError(err error, msg string) {
@@ -53,7 +55,7 @@ func main() {
 	}
 	setup(config)
 
-	producer, err := eventbusclient.NewProducerWithConfig(&config)
+	producer, err := producer_manager.NewProducerWithConfig(&config)
 	if err != nil {
 		panic(err)
 	}

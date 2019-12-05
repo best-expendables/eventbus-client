@@ -2,6 +2,4 @@
 vendor/
 debug.test
 .vscode/
-consumer
-producer
 .DS_Store

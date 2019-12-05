@@ -15,10 +15,11 @@ type (
 	Message struct {
 		Id         string
 		Exchange   string
-		RoutingKey string  `validate:"required"`
-		Header     Header  `validate:"required,dive"`
+		RoutingKey string
+		Header     Header
 		Payload    Payload `validate:"required,dive"`
 		Status     string
+		Error      error
 	}
 
 	// Payload message's data

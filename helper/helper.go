@@ -1,4 +1,4 @@
-package eventbusclient
+package helper
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/logger"
 	"bitbucket.org/snapmartinc/trace"
 	userclient "bitbucket.org/snapmartinc/user-service-client"
@@ -15,12 +16,6 @@ import (
 	newrelic "github.com/newrelic/go-agent"
 	"github.com/streadway/amqp"
 )
-
-var loggerFactory logger.Factory
-
-func init() {
-	loggerFactory = logger.NewLoggerFactory(logger.InfoLevel)
-}
 
 type contextKey int
 
@@ -45,7 +40,7 @@ func GetGormFromContext(ctx context.Context) *gorm.DB {
 	panic(ErrDbEmpty)
 }
 
-func startTransactionForEvent(nrApp newrelic.Application, job *Message) newrelic.Transaction {
+func StartTransactionForEvent(nrApp newrelic.Application, job *eventbusclient.Message) newrelic.Transaction {
 	nrTxn := nrApp.StartTransaction(fmt.Sprintf("%s:%s", transactionPrefix, job.Header.EventName), nil, nil)
 	_ = nrTxn.AddAttribute(logger.FieldTraceId, job.Header.TraceId)
 	_ = nrTxn.AddAttribute(logger.FieldUserId, job.Header.UserId)
@@ -54,7 +49,7 @@ func startTransactionForEvent(nrApp newrelic.Application, job *Message) newrelic
 	return nrTxn
 }
 
-func startTransactionForMessage(nrApp newrelic.Application, m *Message) newrelic.Transaction {
+func StartTransactionForMessage(nrApp newrelic.Application, m *eventbusclient.Message) newrelic.Transaction {
 	nrTxn := nrApp.StartTransaction(fmt.Sprintf("%s:%s", transactionPrefix, m.Header.EventName), nil, nil)
 	_ = nrTxn.AddAttribute(logger.FieldTraceId, m.Header.TraceId)
 	_ = nrTxn.AddAttribute(logger.FieldUserId, m.Header.UserId)
@@ -64,7 +59,7 @@ func startTransactionForMessage(nrApp newrelic.Application, m *Message) newrelic
 }
 
 //From Message data, build the fields needed for logger
-func getLogFieldFromMessage(message *Message) logger.Fields {
+func GetLogFieldFromMessage(message *eventbusclient.Message) logger.Fields {
 	data, _ := json.Marshal(message.Payload.Data)
 	fields := logger.Fields{
 		"message_id":        message.Id,
@@ -83,11 +78,13 @@ func getLogFieldFromMessage(message *Message) logger.Fields {
 }
 
 //From rabbitmq delivery data, build the original message
-func getMessageFromDelivery(d amqp.Delivery) (*Message, error) {
-	payload := Payload{}
+func GetMessageFromDelivery(d amqp.Delivery) *eventbusclient.Message {
+	payload := eventbusclient.Payload{}
+	msg := &eventbusclient.Message{}
 	err := json.Unmarshal(d.Body, &payload)
 	if err != nil {
-		return nil, err
+		msg.Error = err
+		return msg
 	}
 
 	t, _ := d.Headers["Timestamp"].(int64)
@@ -96,11 +93,11 @@ func getMessageFromDelivery(d amqp.Delivery) (*Message, error) {
 	}
 	timestamp := time.Unix(t, 0)
 	retry, _ := d.Headers["xRetryCount"].(int16)
-	msg := Message{
+	msg = &eventbusclient.Message{
 		Id:         d.MessageId,
 		Exchange:   d.Exchange,
 		RoutingKey: d.RoutingKey,
-		Header: Header{
+		Header: eventbusclient.Header{
 			Timestamp:   timestamp,
 			Publisher:   getHeader(d.Headers, "Publisher"),
 			EventName:   getHeader(d.Headers, "EventName"),
@@ -109,13 +106,14 @@ func getMessageFromDelivery(d amqp.Delivery) (*Message, error) {
 			XRetryCount: retry,
 		},
 		Payload: payload,
+		Status:  eventbusclient.MessageStatusAck,
 	}
 
-	return &msg, err
+	return msg
 }
 
 //Build the context from Message, the context now will have data for logging and tracing
-func contextFromMessage(msg *Message) context.Context {
+func ContextFromMessage(msg *eventbusclient.Message) context.Context {
 	ctx := trace.ContextWithRequestID(context.Background(), msg.Header.TraceId)
 	ctx = userclient.ContextWithUser(ctx, &userclient.User{Id: msg.Header.UserId})
 	loggerFactory := logger.NewLoggerFactory(logger.InfoLevel)

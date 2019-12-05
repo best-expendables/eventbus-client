@@ -1,25 +1,28 @@
-package eventbusclient
+package producer_manager
 
 import (
-	"bitbucket.org/snapmartinc/logger"
 	"context"
+
+	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
+	"bitbucket.org/snapmartinc/eventbus-client/helper"
+	"bitbucket.org/snapmartinc/logger"
 )
 
 type (
 	//PublishFunc publish message
-	PublishFunc func(ctx context.Context, message *Message) error
+	PublishFunc func(ctx context.Context, message *eventbusclient.Message) error
 	//PublishFuncMiddleware middleware
 	PublishFuncMiddleware func(next PublishFunc) PublishFunc
 )
 
 func PublishMessageLogMiddleware(next PublishFunc) PublishFunc {
-	return func(ctx context.Context, message *Message) error {
+	return func(ctx context.Context, message *eventbusclient.Message) error {
 		logEntry := logger.EntryFromContext(ctx)
 		if logEntry == nil {
-			logEntry = loggerFactory.Logger(ctx)
+			logEntry = helper.LoggerFactory.Logger(ctx)
 		}
 
-		fields := getLogFieldFromMessage(message)
+		fields := helper.GetLogFieldFromMessage(message)
 		logEntry.WithFields(fields).Info("MessagePublishing")
 
 		return next(ctx, message)
