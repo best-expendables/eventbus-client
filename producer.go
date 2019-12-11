@@ -158,6 +158,9 @@ func (p *producer) publish(_ context.Context, msg *Message) error {
 		} else if err == ErrMessageNotAcked {
 		}
 		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+		if err != nil {
+			logger.Errorf("Publish message fail: %v", err)
+		}
 	}
 
 	return nil
@@ -190,6 +193,9 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 		} else if err == ErrMessageNotAcked {
 		}
 		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+		if err != nil {
+			logger.Errorf("Publish raw message fail: %v", err)
+		}
 	}
 
 	return nil
@@ -197,6 +203,7 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 
 func (p *producer) publishWithConfirm(exchange, routingKey string, msg amqp.Publishing) error {
 	if err := p.channel.Publish(exchange, routingKey, true, false, msg); err != nil {
+		time.Sleep(retryDelaySeconds * time.Second)
 		return err
 	}
 	select {
