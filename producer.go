@@ -203,6 +203,7 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 
 func (p *producer) publishWithConfirm(exchange, routingKey string, msg amqp.Publishing) error {
 	if err := p.channel.Publish(exchange, routingKey, true, false, msg); err != nil {
+		time.Sleep(retryDelaySeconds * time.Second)
 		return err
 	}
 	select {
