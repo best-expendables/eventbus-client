@@ -149,21 +149,7 @@ func (p *producer) publish(_ context.Context, msg *Message) error {
 		Body:         body,
 	}
 
-	err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
-	for err != nil {
-		if err == amqp.ErrClosed {
-			_ = p.createConnection()
-		} else if err == ErrMessageSendConfirmFailed {
-			_ = p.createConnection()
-		} else if err == ErrMessageNotAcked {
-		}
-		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
-		if err != nil {
-			logger.Errorf("Publish message fail: %v", err)
-		}
-	}
-
-	return nil
+	return p.publishWithRetry(msg.Exchange, msg.RoutingKey, publishing)
 }
 
 func (p *producer) PublishRaw(ctx context.Context, msg *Message) error {
@@ -184,17 +170,22 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 		Body:         body,
 	}
 
-	err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+	return p.publishWithRetry(msg.Exchange, msg.RoutingKey, publishing)
+}
+
+func (p *producer) publishWithRetry(exchange, routingKey string, msg amqp.Publishing) error {
+	err := p.publishWithConfirm(exchange, routingKey, msg)
 	for err != nil {
+		time.Sleep(retryDelaySeconds * time.Second)
 		if err == amqp.ErrClosed {
 			_ = p.createConnection()
 		} else if err == ErrMessageSendConfirmFailed {
 			_ = p.createConnection()
 		} else if err == ErrMessageNotAcked {
 		}
-		err = p.publishWithConfirm(msg.Exchange, msg.RoutingKey, publishing)
+		err = p.publishWithConfirm(exchange, routingKey, msg)
 		if err != nil {
-			logger.Errorf("Publish raw message fail: %v", err)
+			logger.Errorf("Publish message fail: %v", err)
 		}
 	}
 
@@ -203,7 +194,6 @@ func (p *producer) publishRaw(ctx context.Context, msg *Message) error {
 
 func (p *producer) publishWithConfirm(exchange, routingKey string, msg amqp.Publishing) error {
 	if err := p.channel.Publish(exchange, routingKey, true, false, msg); err != nil {
-		time.Sleep(retryDelaySeconds * time.Second)
 		return err
 	}
 	select {
