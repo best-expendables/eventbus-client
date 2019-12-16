@@ -46,29 +46,19 @@ func GetGormFromContext(ctx context.Context) *gorm.DB {
 }
 
 func startTransactionForEvent(nrApp newrelic.Application, job *Message) newrelic.Transaction {
-	nrTxn := nrApp.StartTransaction(
-		fmt.Sprintf("%s:%s", transactionPrefix, job.Header.EventName),
-		nil,
-		nil,
-	)
-	nrTxn.AddAttribute(logger.FieldTraceId, job.Header.TraceId)
-	nrTxn.AddAttribute(logger.FieldUserId, job.Header.UserId)
-	nrTxn.AddAttribute(EntityIdAttr, job.Payload.EntityId)
-	nrTxn.AddAttribute(PayloadAttr, job.Payload.Data)
-
+	nrTxn := nrApp.StartTransaction(fmt.Sprintf("%s:%s", transactionPrefix, job.Header.EventName), nil, nil)
+	_ = nrTxn.AddAttribute(logger.FieldTraceId, job.Header.TraceId)
+	_ = nrTxn.AddAttribute(logger.FieldUserId, job.Header.UserId)
+	_ = nrTxn.AddAttribute(EntityIdAttr, job.Payload.EntityId)
+	_ = nrTxn.AddAttribute(PayloadAttr, job.Payload.Data)
 	return nrTxn
 }
 
-func startTransactionForDelivery(nrApp newrelic.Application, d amqp.Delivery) newrelic.Transaction {
-	nrTxn := nrApp.StartTransaction(
-		fmt.Sprintf("%s:%s", transactionPrefix, getHeader(d.Headers, "EventName")),
-		nil,
-		nil,
-	)
-
-	nrTxn.AddAttribute(logger.FieldTraceId, getHeader(d.Headers, "TraceId"))
-	nrTxn.AddAttribute(logger.FieldUserId, getHeader(d.Headers, "UserId"))
-	nrTxn.AddAttribute(PayloadAttr, string(d.Body))
+func startTransactionForMessage(nrApp newrelic.Application, m *Message) newrelic.Transaction {
+	nrTxn := nrApp.StartTransaction(fmt.Sprintf("%s:%s", transactionPrefix, m.Header.EventName), nil, nil)
+	_ = nrTxn.AddAttribute(logger.FieldTraceId, m.Header.TraceId)
+	_ = nrTxn.AddAttribute(logger.FieldUserId, m.Header.UserId)
+	_ = nrTxn.AddAttribute(PayloadAttr, m.Payload.Data)
 
 	return nrTxn
 }
