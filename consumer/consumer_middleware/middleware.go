@@ -5,6 +5,8 @@ import (
 
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/helper"
+	nrcontext "bitbucket.org/snapmartinc/newrelic-context"
+	"github.com/jinzhu/gorm"
 )
 
 type ConsumeFunc func(ctx context.Context, message *eventbusclient.Message)
@@ -35,5 +37,15 @@ func LogFailedMessage(next ConsumeFunc) ConsumeFunc {
 
 		}()
 		next(ctx, message)
+	}
+}
+
+func SetDbManagerToCtx(dbConn *gorm.DB) func(next ConsumeFunc) ConsumeFunc {
+	return func(next ConsumeFunc) ConsumeFunc {
+		return func(ctx context.Context, message *eventbusclient.Message) {
+			newdb := nrcontext.SetTxnToGorm(ctx, dbConn)
+			ctx = helper.SetGormToContext(ctx, newdb)
+			next(ctx, message)
+		}
 	}
 }
