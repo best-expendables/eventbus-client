@@ -6,6 +6,7 @@ import (
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/helper"
 	"bitbucket.org/snapmartinc/logger"
+	newrelic "github.com/newrelic/go-agent"
 )
 
 type (
@@ -26,6 +27,18 @@ func PublishMessageLogMiddleware(next PublishFunc) PublishFunc {
 		logEntry.WithFields(fields).Info("MessagePublishing")
 
 		return next(ctx, message)
+	}
+}
+
+func AttachTraceId() PublishFuncMiddleware {
+	return func(next PublishFunc) PublishFunc {
+		return func(ctx context.Context, message *eventbusclient.Message) error {
+			if txn := newrelic.FromContext(ctx); txn != nil {
+				traceId := txn.CreateDistributedTracePayload().Text()
+				message.Header.TraceId = traceId
+			}
+			return next(ctx, message)
+		}
 	}
 }
 
