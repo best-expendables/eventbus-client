@@ -1,0 +1,15 @@
+version: '2'
+
+networks:
+    rabbitmq:
+        driver: bridge
+services:
+    rabbitmq:
+        image: relaxart/rabbitmq-server
+        ports:
+            - "15673:15672"
+            - "5673:5672"
+        networks:
+            rabbitmq:
+                aliases:
+                    - rabbitmq

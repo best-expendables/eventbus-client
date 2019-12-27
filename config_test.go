@@ -1,12 +1,13 @@
 package eventbusclient_test
 
 import (
-	eventbusclient "eventbus-client"
 	"testing"
+
+	eventbusclient2 "bitbucket.org/snapmartinc/eventbus-client"
 )
 
 func TestGetUrl(t *testing.T) {
-	conf := eventbusclient.Config{
+	conf := eventbusclient2.Config{
 		Host:     "127.0.0.1",
 		Port:     "5672",
 		Username: "guest",

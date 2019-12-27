@@ -1,4 +1,4 @@
-package eventbusclient
+package helper
 
 import (
 	"testing"
@@ -21,7 +21,7 @@ func TestGetMessageFromDelivery(t *testing.T) {
 		Headers: header,
 	}
 
-	msg, err := getMessageFromDelivery(delivery)
+	msg, err := GetMessageFromDelivery(delivery)
 
 	if err != nil {
 		t.Error("should get no error")
