@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"strings"
 
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/helper"
@@ -34,7 +35,10 @@ func RetryWithError(publisher producer_manager.Producer, retryCount int) func(ne
 					return
 				}
 				logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", message.Error))
-				message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
+
+				if !strings.HasSuffix(message.RoutingKey, ".delayed") {
+					message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
+				}
 				if err := publisher.Publish(ctx, message); err != nil {
 					message.Error = errors.Wrap(message.Error, fmt.Sprintf("failed to publish retry event. Error: %s", err))
 					message.Status = eventbusclient.MessageStatusReject
