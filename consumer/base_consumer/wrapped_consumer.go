@@ -5,17 +5,15 @@ import (
 
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/consumer/consumer_middleware"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
-	"github.com/jinzhu/gorm"
 )
 
 type consumer struct {
-	makeConsumerFunc func(context.Context, *gorm.DB) Consumer
+	makeConsumerFunc func(context.Context) Consumer
 	middleware       []consumer_middleware.Middleware
 }
 
 func (c consumer) Consume(ctx context.Context, msg *eventbusclient.Message) {
-	originConsumer := c.makeConsumerFunc(ctx, helper.GetGormFromContext(ctx))
+	originConsumer := c.makeConsumerFunc(ctx)
 	originConsumer.Use(c.middleware...)
 	originConsumer.Consume(ctx, msg)
 }
@@ -29,7 +27,7 @@ func (c consumer) Middlewares() []consumer_middleware.Middleware {
 }
 
 func MakeConsumer(
-	makeConsumerFunc func(context.Context, *gorm.DB) Consumer,
+	makeConsumerFunc func(context.Context) Consumer,
 	middleware []consumer_middleware.Middleware,
 ) Consumer {
 	return &consumer{

@@ -12,6 +12,7 @@ import (
 	"bitbucket.org/snapmartinc/logger"
 	"bitbucket.org/snapmartinc/trace"
 	userclient "bitbucket.org/snapmartinc/user-service-client"
+	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	newrelic "github.com/newrelic/go-agent"
 	"github.com/streadway/amqp"
@@ -20,8 +21,10 @@ import (
 type contextKey int
 
 const gormContextKey contextKey = 0
+const redisClientContextKey contextKey = 0
 
 var ErrDbEmpty = errors.New("db connection invalid")
+var ErrRedisEmpty = errors.New("Redis connection invalid")
 
 const (
 	EntityIdAttr      = "entityId"
@@ -38,6 +41,16 @@ func GetGormFromContext(ctx context.Context) *gorm.DB {
 		return db.(*gorm.DB)
 	}
 	panic(ErrDbEmpty)
+}
+func SetRedisClientToContext(ctx context.Context, c *redis.Client) context.Context {
+	return context.WithValue(ctx, redisClientContextKey, c)
+}
+
+func GetRedisClientFromContext(ctx context.Context) *redis.Client {
+	if db := ctx.Value(redisClientContextKey); db != nil {
+		return db.(*redis.Client)
+	}
+	panic(ErrRedisEmpty)
 }
 
 func StartTransactionForEvent(nrApp newrelic.Application, job *eventbusclient.Message) newrelic.Transaction {

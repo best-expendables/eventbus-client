@@ -6,6 +6,7 @@ import (
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/helper"
 	nrcontext "bitbucket.org/snapmartinc/newrelic-context"
+	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 )
 
@@ -45,6 +46,16 @@ func SetDbManagerToCtx(dbConn *gorm.DB) func(next ConsumeFunc) ConsumeFunc {
 		return func(ctx context.Context, message *eventbusclient.Message) {
 			newdb := nrcontext.SetTxnToGorm(ctx, dbConn)
 			ctx = helper.SetGormToContext(ctx, newdb)
+			next(ctx, message)
+		}
+	}
+}
+
+func NewRelicToRedis(c *redis.Client) func(next ConsumeFunc) ConsumeFunc {
+	return func(next ConsumeFunc) ConsumeFunc {
+		return func(ctx context.Context, message *eventbusclient.Message) {
+			redisClientWithNR := nrcontext.WrapRedisClient(ctx, c)
+			ctx = helper.SetRedisClientToContext(ctx, redisClientWithNR)
 			next(ctx, message)
 		}
 	}
