@@ -12,7 +12,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/leodido/go-urn v1.2.0 // indirect
-	github.com/newrelic/go-agent v3.2.0+incompatible
+	github.com/newrelic/go-agent v2.14.1+incompatible
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/pkg/errors v0.9.1
