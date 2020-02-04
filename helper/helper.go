@@ -18,10 +18,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type contextKey int
+type gormKeyInt int
+type redisClientKeyInt int
 
-const gormContextKey contextKey = 0
-const redisClientContextKey contextKey = 0
+const gormContextKey gormKeyInt = iota
+const redisClientContextKey redisClientKeyInt = iota
 
 var ErrDbEmpty = errors.New("db connection invalid")
 var ErrRedisEmpty = errors.New("Redis connection invalid")
