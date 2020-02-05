@@ -129,7 +129,7 @@ func (c *consumerManager) processMessage(consumer base_consumer.Consumer, ctx co
 	}
 
 	h := consumer.Consume
-	for i := len(consumer.Middlewares()) - 1; i > 0; i-- {
+	for i := len(consumer.Middlewares()) - 1; i >= 0; i-- {
 		h = consumer.Middlewares()[i](h)
 	}
 	h(ctx, message)
