@@ -1,6 +1,7 @@
 package consumer_manager
 
 import (
+	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
@@ -94,6 +95,7 @@ func (c *consumerManager) startConsumingQueue(queueName string) error {
 			}
 		}()
 	}
+	logger.Infof("Start consumer on queue: %s", queueName)
 	return nil
 }
 
