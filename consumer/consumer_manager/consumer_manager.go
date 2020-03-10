@@ -1,6 +1,7 @@
 package consumer_manager
 
 import (
+	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
@@ -17,7 +18,7 @@ import (
 
 type Manager interface {
 	AssignConsumerToQueue(queueName string, consumer base_consumer.Consumer, replication int)
-	StartConsuming() error
+	StartConsuming(queueNames ...string) error
 	ShutDown()
 }
 
@@ -46,8 +47,15 @@ func (c *consumerManager) AssignConsumerToQueue(queueName string, consumer base_
 	c.consumerByQueueCount[queueName] = replication
 }
 
-func (c *consumerManager) StartConsuming() error {
-	for queueName, _ := range c.consumerByQueueCount {
+func (c *consumerManager) StartConsuming(queueNames ...string) error {
+	consumerQueues := queueNames
+	if len(consumerQueues) == 0 {
+		for queueName, _ := range c.consumerByQueueCount {
+			consumerQueues = append(consumerQueues, queueName)
+		}
+	}
+
+	for _, queueName := range consumerQueues {
 		if err := c.startConsumingQueue(queueName); err != nil {
 			return err
 		}
@@ -87,6 +95,7 @@ func (c *consumerManager) startConsumingQueue(queueName string) error {
 			}
 		}()
 	}
+	logger.Infof("Start consumer on queue: %s", queueName)
 	return nil
 }
 
