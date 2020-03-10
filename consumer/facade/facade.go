@@ -13,7 +13,7 @@ import (
 type ConsumerFacade interface {
 	AddQueueAndConsumer(queueName string, consumer base_consumer.Consumer, replication int)
 	Connect() error
-	StartConsuming() error
+	StartConsuming(queueNames ...string) error
 	ShutDown() error
 	Wait()
 }
@@ -57,8 +57,8 @@ func (c *consumerFacade) Connect() error {
 	return nil
 }
 
-func (c *consumerFacade) StartConsuming() error {
-	if err := c.consumerManager.StartConsuming(); err != nil {
+func (c *consumerFacade) StartConsuming(queueNames ...string) error {
+	if err := c.consumerManager.StartConsuming(queueNames...); err != nil {
 		return err
 	}
 	go func() {
