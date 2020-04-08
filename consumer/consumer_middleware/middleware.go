@@ -6,7 +6,7 @@ import (
 	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
 	"bitbucket.org/snapmartinc/eventbus-client/helper"
 	nrcontext "bitbucket.org/snapmartinc/newrelic-context"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 )
 
