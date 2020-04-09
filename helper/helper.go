@@ -12,7 +12,7 @@ import (
 	"bitbucket.org/snapmartinc/logger"
 	"bitbucket.org/snapmartinc/trace"
 	userclient "bitbucket.org/snapmartinc/user-service-client"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	newrelic "github.com/newrelic/go-agent"
 	"github.com/streadway/amqp"
