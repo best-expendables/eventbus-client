@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func RetryWithError(publisher producer_manager.Producer, retryCount int) func(next ConsumeFunc) ConsumeFunc {
+func RetryWithError(publisher producer_manager.Producer, retryCount int, delayRoutingKeys ...string) func(next ConsumeFunc) ConsumeFunc {
 	return func(next ConsumeFunc) ConsumeFunc {
 		return func(ctx context.Context, message *eventbusclient.Message) {
 			defer func() {
@@ -36,8 +36,12 @@ func RetryWithError(publisher producer_manager.Producer, retryCount int) func(ne
 				}
 				logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", message.Error))
 
-				if !strings.HasSuffix(message.RoutingKey, ".delayed") {
-					message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
+				if len(delayRoutingKeys) > 0 {
+					message.RoutingKey = delayRoutingKeys[0]
+				} else {
+					if !strings.HasSuffix(message.RoutingKey, ".delayed") {
+						message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
+					}
 				}
 				if err := publisher.Publish(ctx, message); err != nil {
 					message.Error = errors.Wrap(message.Error, fmt.Sprintf("failed to publish retry event. Error: %s", err))
