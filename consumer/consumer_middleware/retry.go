@@ -37,7 +37,7 @@ func RetryWithError(publisher producer_manager.Producer, retryCount int, delayRo
 				logEntry.WithFields(fields).Error(fmt.Sprintf("retry with error message: %v", message.Error))
 
 				if len(delayRoutingKeys) > 0 {
-					message.RoutingKey = fmt.Sprintf("%s.%s", message.RoutingKey, delayRoutingKeys[0])
+					message.RoutingKey = delayRoutingKeys[0]
 				} else {
 					if !strings.HasSuffix(message.RoutingKey, ".delayed") {
 						message.RoutingKey = fmt.Sprintf("%s.delayed", message.RoutingKey)
