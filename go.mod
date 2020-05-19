@@ -8,7 +8,7 @@ require (
 	bitbucket.org/snapmartinc/trace v0.0.0-20190925102910-0918afc8a51f
 	bitbucket.org/snapmartinc/user-service-client v0.0.0-20190916112339-fefd7d2a4d59
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/go-redis/redis/v8 v8.0.0-alpha.1
+	github.com/go-redis/redis/v8 v8.0.0-beta.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/leodido/go-urn v1.2.0 // indirect
