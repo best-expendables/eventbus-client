@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/connection_initializer"
+	"bitbucket.org/gank-global/eventbus-client/consumer/connection_initializer"
 	"github.com/streadway/amqp"
 )
 

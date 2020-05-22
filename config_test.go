@@ -3,7 +3,7 @@ package eventbusclient_test
 import (
 	"testing"
 
-	eventbusclient2 "bitbucket.org/snapmartinc/eventbus-client"
+	eventbusclient2 "bitbucket.org/gank-global/eventbus-client"
 )
 
 func TestGetUrl(t *testing.T) {

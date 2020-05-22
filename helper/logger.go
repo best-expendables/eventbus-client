@@ -3,7 +3,7 @@ package helper
 import (
 	"context"
 
-	"bitbucket.org/snapmartinc/logger"
+	"github.com/best-expendables/logger"
 )
 
 var LoggerFactory logger.Factory

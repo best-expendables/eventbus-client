@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/helper"
 	"github.com/pkg/errors"
 )
 

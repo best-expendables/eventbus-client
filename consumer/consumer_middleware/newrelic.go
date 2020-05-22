@@ -3,8 +3,8 @@ package consumer_middleware
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/helper"
 	newrelic "github.com/newrelic/go-agent"
 )
 

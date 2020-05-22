@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/logger"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"github.com/best-expendables/logger"
 	"github.com/streadway/amqp"
 	"gopkg.in/go-playground/validator.v9"
 )

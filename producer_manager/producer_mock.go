@@ -3,7 +3,7 @@ package producer_manager
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
 )
 
 // ProducerMock producer_manager mock

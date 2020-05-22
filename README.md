@@ -1,7 +1,7 @@
 # EventBus client library
 
 ```go
-import "bitbucket.org/snapmartinc/eventbusclient"
+import "bitbucket.org/gank-global/eventbusclient"
 ```
 
 ## Usage

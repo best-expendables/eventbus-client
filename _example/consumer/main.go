@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/base_consumer"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/connection_initializer"
-	consumer_manager2 "bitbucket.org/snapmartinc/eventbus-client/consumer/consumer_manager"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/consumer_middleware"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/delivery_channel_manager"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/facade"
-	"bitbucket.org/snapmartinc/logger"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/consumer/base_consumer"
+	"bitbucket.org/gank-global/eventbus-client/consumer/connection_initializer"
+	consumer_manager2 "bitbucket.org/gank-global/eventbus-client/consumer/consumer_manager"
+	"bitbucket.org/gank-global/eventbus-client/consumer/consumer_middleware"
+	"bitbucket.org/gank-global/eventbus-client/consumer/delivery_channel_manager"
+	"bitbucket.org/gank-global/eventbus-client/consumer/facade"
+	"github.com/best-expendables/logger"
 )
 
 type SimpleConsumer struct {

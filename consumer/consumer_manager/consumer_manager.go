@@ -1,18 +1,18 @@
 package consumer_manager
 
 import (
-	"bitbucket.org/snapmartinc/logger"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/best-expendables/logger"
 	"sync"
 	"time"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/base_consumer"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/delivery_channel_manager"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/consumer/base_consumer"
+	"bitbucket.org/gank-global/eventbus-client/consumer/delivery_channel_manager"
+	"bitbucket.org/gank-global/eventbus-client/helper"
 	"github.com/streadway/amqp"
 )
 

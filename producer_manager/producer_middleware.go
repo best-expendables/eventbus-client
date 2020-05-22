@@ -3,9 +3,9 @@ package producer_manager
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
-	"bitbucket.org/snapmartinc/logger"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/helper"
+	"github.com/best-expendables/logger"
 	newrelic "github.com/newrelic/go-agent"
 )
 

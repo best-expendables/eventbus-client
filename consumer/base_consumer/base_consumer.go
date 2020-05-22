@@ -3,8 +3,8 @@ package base_consumer
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/consumer/consumer_middleware"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/consumer/consumer_middleware"
 )
 
 type BaseConsumer struct {

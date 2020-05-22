@@ -6,9 +6,9 @@ import (
 	"runtime/debug"
 	"strings"
 
-	eventbusclient "bitbucket.org/snapmartinc/eventbus-client"
-	"bitbucket.org/snapmartinc/eventbus-client/helper"
-	"bitbucket.org/snapmartinc/eventbus-client/producer_manager"
+	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	"bitbucket.org/gank-global/eventbus-client/helper"
+	"bitbucket.org/gank-global/eventbus-client/producer_manager"
 	"github.com/pkg/errors"
 )
 
