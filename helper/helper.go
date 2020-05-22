@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/gank-global/trace"
 	userclient "bitbucket.org/gank-global/user-service-client"
 	eventbusclient "github.com/best-expendables/eventbus-client"
 	"github.com/best-expendables/logger"
+	"github.com/best-expendables/trace"
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/gorm"
 	newrelic "github.com/newrelic/go-agent"
