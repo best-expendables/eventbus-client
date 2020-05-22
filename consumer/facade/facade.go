@@ -3,10 +3,10 @@ package facade
 import (
 	"time"
 
-	"bitbucket.org/gank-global/eventbus-client/consumer/base_consumer"
-	"bitbucket.org/gank-global/eventbus-client/consumer/connection_initializer"
-	"bitbucket.org/gank-global/eventbus-client/consumer/consumer_manager"
-	"bitbucket.org/gank-global/eventbus-client/consumer/delivery_channel_manager"
+	"github.com/best-expendables/eventbus-client/consumer/base_consumer"
+	"github.com/best-expendables/eventbus-client/consumer/connection_initializer"
+	"github.com/best-expendables/eventbus-client/consumer/consumer_manager"
+	"github.com/best-expendables/eventbus-client/consumer/delivery_channel_manager"
 	"github.com/best-expendables/logger"
 )
 

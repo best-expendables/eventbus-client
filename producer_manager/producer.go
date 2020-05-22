@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
+	eventbusclient "github.com/best-expendables/eventbus-client"
 	"github.com/best-expendables/logger"
 	"github.com/streadway/amqp"
 	"gopkg.in/go-playground/validator.v9"

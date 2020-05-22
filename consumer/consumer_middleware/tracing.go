@@ -3,8 +3,8 @@ package consumer_middleware
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
 	"bitbucket.org/gank-global/trace"
+	eventbusclient "github.com/best-expendables/eventbus-client"
 )
 
 func StoreTraceIdIntoContext(next ConsumeFunc) ConsumeFunc {

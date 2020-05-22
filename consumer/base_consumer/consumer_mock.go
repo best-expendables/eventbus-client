@@ -3,8 +3,8 @@ package base_consumer
 import (
 	"context"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
-	"bitbucket.org/gank-global/eventbus-client/consumer/consumer_middleware"
+	eventbusclient "github.com/best-expendables/eventbus-client"
+	"github.com/best-expendables/eventbus-client/consumer/consumer_middleware"
 )
 
 // MockConsumer mocks struct for consumer_manager

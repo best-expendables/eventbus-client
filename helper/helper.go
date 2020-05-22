@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
 	"bitbucket.org/gank-global/trace"
 	userclient "bitbucket.org/gank-global/user-service-client"
+	eventbusclient "github.com/best-expendables/eventbus-client"
 	"github.com/best-expendables/logger"
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/gorm"

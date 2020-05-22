@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
-	"bitbucket.org/gank-global/eventbus-client/producer_manager"
+	eventbusclient "github.com/best-expendables/eventbus-client"
+	"github.com/best-expendables/eventbus-client/producer_manager"
 	"github.com/streadway/amqp"
 )
 

@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	eventbusclient "bitbucket.org/gank-global/eventbus-client"
-	"bitbucket.org/gank-global/eventbus-client/consumer/base_consumer"
-	"bitbucket.org/gank-global/eventbus-client/consumer/delivery_channel_manager"
-	"bitbucket.org/gank-global/eventbus-client/helper"
+	eventbusclient "github.com/best-expendables/eventbus-client"
+	"github.com/best-expendables/eventbus-client/consumer/base_consumer"
+	"github.com/best-expendables/eventbus-client/consumer/delivery_channel_manager"
+	"github.com/best-expendables/eventbus-client/helper"
 	"github.com/streadway/amqp"
 )
 
