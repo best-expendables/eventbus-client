@@ -3,9 +3,9 @@ package consumer_middleware
 import (
 	"context"
 
-	nrcontext "bitbucket.org/gank-global/newrelic-context"
 	eventbusclient "github.com/best-expendables/eventbus-client"
 	"github.com/best-expendables/eventbus-client/helper"
+	nrcontext "github.com/best-expendables/newrelic-context"
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/gorm"
 )
